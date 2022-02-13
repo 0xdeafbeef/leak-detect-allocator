@@ -43,7 +43,7 @@ extern "C"
         gAllocInternal->gMtx.unlock();
     }
 
-    void alloc_enum(void *usr_data, int(__cdecl *cb)(void *usr_data, size_t address, size_t size, const size_t *stack))
+    void alloc_enum(void *usr_data, int(*cb)(void *usr_data, size_t address, size_t size, const size_t *stack))
     {
         std::vector<std::vector<size_t>> all;
         gAllocInternal->gMtx.lock();

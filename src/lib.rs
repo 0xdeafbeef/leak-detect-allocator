@@ -45,8 +45,10 @@ impl<const STACK_SIZE: usize> LeakTracer<STACK_SIZE> {
         size: usize,
         stack: *const usize,
     ) -> i32 {
-        let closure: &mut &mut dyn FnMut(usize, usize, &[usize]) -> bool =
-            unsafe { std::mem::transmute(usr_data) };
+        let closure: &mut &mut dyn FnMut(usize, usize, &[usize]) -> bool = unsafe {
+            &mut *(usr_data
+                as *mut &mut dyn for<'r> std::ops::FnMut(usize, usize, &'r [usize]) -> bool)
+        };
 
         let s = unsafe { std::slice::from_raw_parts(stack, STACK_SIZE) };
         if closure(address, size, s) {
@@ -118,11 +120,7 @@ impl<const STACK_SIZE: usize> LeakTracer<STACK_SIZE> {
                 let symbol_address = frame.ip();
                 vs[count] = symbol_address as usize;
                 count += 1;
-                if count >= STACK_SIZE {
-                    false
-                } else {
-                    true
-                }
+                count < STACK_SIZE
             });
         }
         drop(l);
